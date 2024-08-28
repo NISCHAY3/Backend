@@ -6,12 +6,9 @@
 const express = require('express')
 const app = express()
 
-app.use(function (req, res, next) {
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-    console.log("middleWare Chala");
-    next();
-
-});
 
 app.get('/', function (req, res) {
     res.send('or bhai')
@@ -19,6 +16,11 @@ app.get('/', function (req, res) {
 
 app.get("/profile", function (req, res) {
     res.send('kya haal hai ')
+})
+
+app.get("/about", function (req, res) {
+    res.send("about page hai yh");
+
 })
 
 app.use((err, req, res, next) => {
