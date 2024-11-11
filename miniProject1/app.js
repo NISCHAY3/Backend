@@ -14,10 +14,10 @@ app.get("/", (req, res) => {
     res.render("index");
 });
 
-app.get('/profile', isLoggedIn, (req, res) => {
+app.get("/profile", isLoggedIn, (req, res) => {
     console.log(req.user);
-    res.render("login");
-})
+    res.redirect('/login');
+});
 app.get("/login", (req, res) => {
     res.render("login");
 });
@@ -61,30 +61,27 @@ app.post("/login", async (req, res) => {
     const { email, password } = req.body;
 
     try {
-
         let user = await userModel.findOne({ email });
-        if (!user) return res.status(400).send("Something Went Wrong");
+        if (!user) return res.status(400).send("User not found");
 
         bcrypt.compare(password, user.password, (err, result) => {
             if (result) {
-                res.status(200).send("you can login");
                 const token = jwt.sign({ email: email, userid: user._id }, "nis");
 
-                res.cookie("token", token);
-
+                // Set the cookie and send the response in one step
+                res.cookie("token", token, { httpOnly: true, secure: true });
+                return res.status(200).send("Logged in successfully");
+            } else {
+                // Only one response is sent if login fails
+                return res.status(400).send("Invalid Credentials");
             }
-            else res.redirect('/login');
-        })
-
-
-
-
+        });
     } catch (error) {
-
         console.error(error);
         res.status(500).send("An error occurred");
     }
 });
+
 
 
 app.get('/logout', (req, res) => {
@@ -94,11 +91,17 @@ app.get('/logout', (req, res) => {
 
 
 function isLoggedIn(req, res, next) {
-    if (req.cookies.token === "") res.send("You must be loggedin");
-    else {
-        let data = jwt.verify(req.cookies.token, "nis");
+    const token = req.cookies.token;
+    if (!token) {
+        return res.redirect('/login');
+    }
+
+    try {
+        const data = jwt.verify(token, "nis");
         req.user = data;
         next();
+    } catch (err) {
+        return res.redirect('/login');
     }
 }
 
