@@ -8,16 +8,12 @@ const postSchema = mongoose.Schema({
         ref: "user"
     },
 
-    content: { // Add this field to store the post content
-        type: String,
-        required: true
-    },
-
     date: {
         type: Date,
         default: Date.now
     },
 
+    content: String,
     likes: [
         {
             type: mongoose.Schema.Types.ObjectId,
@@ -25,7 +21,7 @@ const postSchema = mongoose.Schema({
         }
     ]
 
-})
+});
 
 module.exports = mongoose.model('post', postSchema);
 
