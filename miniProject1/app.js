@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const userModel = require("./models/user");
+const postModel = require("./models/post");
 const cookieParser = require('cookie-parser');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -14,9 +15,27 @@ app.get("/", (req, res) => {
     res.render("index");
 });
 
-app.get("/profile", isLoggedIn, (req, res) => {
-    console.log(req.user);
-    res.redirect('/login');
+app.get("/profile", isLoggedIn, async (req, res) => {
+
+    let user = await userModel.findOne({ email: req.user.email }).populate("posts");
+
+    res.render("profile", { user });
+});
+
+app.post("/post", isLoggedIn, async (req, res) => {
+    let user = await userModel.findOne({ email: req.user.email });
+    let content = req.body.content;
+    let post = await postModel.create({
+
+        user: user._id,
+        content
+
+    });
+
+    user.posts.push(post._id);
+    await user.save();
+    res.redirect("/profile");
+
 });
 app.get("/login", (req, res) => {
     res.render("login");
@@ -70,10 +89,9 @@ app.post("/login", async (req, res) => {
 
                 // Set the cookie and send the response in one step
                 res.cookie("token", token, { httpOnly: true, secure: true });
-                return res.status(200).send("Logged in successfully");
+                return res.status(200).redirect("/profile");
             } else {
-                // Only one response is sent if login fails
-                return res.status(400).send("Invalid Credentials");
+                res.redirect("/login");
             }
         });
     } catch (error) {
@@ -93,7 +111,7 @@ app.get('/logout', (req, res) => {
 function isLoggedIn(req, res, next) {
     const token = req.cookies.token;
     if (!token) {
-        return res.redirect('/login');
+        return res.redirect("/login");
     }
 
     try {
