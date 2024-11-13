@@ -22,7 +22,6 @@ app.get("/profile", isLoggedIn, async (req, res) => {
     res.render("profile", { user });
 });
 
-
 app.get("/like/:id", isLoggedIn, async (req, res) => {
 
     let post = await postModel.findOne({ _id: req.params.id }).populate("user");
@@ -46,7 +45,6 @@ app.get("/edit/:id", isLoggedIn, async (req, res) => {
     res.render("edit", { post });
 
 });
-
 
 app.post("/update/:id", isLoggedIn, async (req, res) => {
 
@@ -133,13 +131,10 @@ app.post("/login", async (req, res) => {
     }
 });
 
-
-
 app.get('/logout', (req, res) => {
     res.cookie("token", "");
     res.redirect('/login');
 })
-
 
 function isLoggedIn(req, res, next) {
     const token = req.cookies.token;
@@ -155,7 +150,6 @@ function isLoggedIn(req, res, next) {
         return res.redirect('/login');
     }
 }
-
 
 app.listen(3000, () => {
     console.log("Server is running on port 3000");
