@@ -98,7 +98,7 @@ app.post("/register", async (req, res) => {
 
         res.cookie("token", token);
 
-        res.send("Registered successfully");
+        res.render("login");
 
     } catch (error) {
 
